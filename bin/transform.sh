@@ -78,12 +78,79 @@ if [ "$JAVA_HOME" = "" ]; then
 fi
 
 local=true
-  
-  
-  
-  
-  
-  
-  
+
+JAVA=$JAVA_HOME/bin/java
+JAVA_HEAP_MAX=-Xmx1000m 
+
+# check envvars which might override default args
+if [ "$STS_HEAPSIZE" != "" ]; then
+  #echo "run with heapsize $STS_HEAPSIZE"
+  JAVA_HEAP_MAX="-Xmx""$STS_HEAPSIZE""m"
+  #echo $JAVA_HEAP_MAX
+fi
+
+# CLASSPATH initially contains $STS_CONF_DIR, or defaults to $STS_HOME/conf
+CLASSPATH=${STS_CONF_DIR:=$STS_HOME/conf}
+CLASSPATH=${CLASSPATH}:$JAVA_HOME/lib/tools.jar
+
+# so that filenames w/ spaces are handled correctly in loops below
+IFS=
+
+# add libs to CLASSPATH
+if $local; then
+  for f in $STS_HOME/lib/*.jar; do
+   CLASSPATH=${CLASSPATH}:$f;
+  done
+  # local runtime
+  # add plugins to classpath
+  if [ -d "$STS_HOME/plugins" ]; then
+     CLASSPATH=${STS_HOME}:${CLASSPATH}
+  fi
+fi
+
+# restore ordinary behaviour
+unset IFS
+
+# default log directory & file
+if [ "$STS_LOG_DIR" = "" ]; then
+  STS_LOG_DIR="$STS_HOME/logs"
+fi
+if [ "$STS_LOGFILE" = "" ]; then
+  STS_LOGFILE='sts-transform.log'
+fi
+
+#Fix log path under cygwin
+if $cygwin; then
+  STS_LOG_DIR=`cygpath -p -w "$STS_LOG_DIR"`
+fi
+
+if [ "x$JAVA_LIBRARY_PATH" != "x" ]; then
+  STS_OPTS="$STS_OPTS -Djava.library.path=$JAVA_LIBRARY_PATH"
+fi
+
+# figure out which class to run
+if [ "$COMMAND" = "transform" ] ; then
+  CLASS=uk.gov.scotland.sts.transform.full
+elif [ "$COMMAND" = "transform-xml" ] ; then
+  CLASS=uk.gov.scotland.sts.transform.xml
+elif [ "$COMMAND" = "transform-annotate" ] ; then
+  CLASS=uk.gov.scotland.sts.transform.annotate
+elif [ "$COMMAND" = "transform-rdf/xml" ] ; then
+  CLASS=uk.gov.scotland.sts.transform.rdfxml
+elif [ "$COMMAND" = "junit" ] ; then
+  CLASSPATH=$CLASSPATH:test/classes/
+  CLASS=junit.textui.TestRunner
+else
+  MODULE="$COMMAND"
+  CLASS=$1
+  shift
+fi
+
+if $local; then
+ EXEC_CALL="$JAVA $JAVA_HEAP_MAX $NUTCH_OPTS -classpath $CLASSPATH"
+fi
+
+# run it
+exec $EXEC_CALL $CLASS "$@"
   
   
