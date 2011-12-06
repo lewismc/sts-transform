@@ -1,0 +1,38 @@
+sts-transform //
+////////////////
+
+Copyright (c) 2011 by Lewis John McGibbney, School of Engineering and Built
+Environment, Glasgow Caledonian University
+====
+
+@author: Lewis John McGibbney
+@contact: lewis.mcgibbney@gcu.ac.uk
+@organization: Glasgow Caledonian University
+@version: 2012
+@website: https://github.com/lewismc
+@copyright: 2011-2012, Lewis John McGibbney, Glasgow Caledonian University
+====
+
+Project Specifics
+This project serves the single purpose of
+1) Reading in previously produced HTML files of the Scottish Technical Standards [1]
+2) Ensure that the HTML conforms to particular XSD files published by the Scottish 
+Governments Building Standards Division.  
+3) If the source HTML does not then highlight where it does not and dump this to 
+a single text file for analysis and correction where necessary.
+4) On the other hand, if the source HTML does, begin a transformation to a fine grained
+URI naming XML structure. 
+5) Based on this new structure undertake named entity recognition (NER), natural language 
+processing (NLP) using GATE [2] and tagging based on existing ifcXML schema definitions [3]
+6) Once this has been done dump the resulting annotated XML to an XML output file
+7) Finally perform another transformation on the XML which will result in an RDF/XML dump, 
+this can then be used within the semantic web.
+
+Associated projects within this suite
+can be found at https://github.com/lewismc
+
+====
+
+[1] http://www.scotland.gov.uk/Topics/Built-Environment/Building/Building-standards/publications/pubtech
+[2] http://gate.ac.uk/
+[3] http://buildingsmart-tech.org/specifications/ifcxml-releases
