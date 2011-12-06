@@ -1,0 +1,527 @@
+<?xml version="1.0"?>
+<!--
+ Licensed to the Apache Software Foundation (ASF) under one or more
+ contributor license agreements.  See the NOTICE file distributed with
+ this work for additional information regarding copyright ownership.
+ The ASF licenses this file to You under the Apache License, Version 2.0
+ (the "License"); you may not use this file except in compliance with
+ the License.  You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+ Unless required by applicable law or agreed to in writing, software
+ distributed under the License is distributed on an "AS IS" BASIS,
+ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ See the License for the specific language governing permissions and
+ limitations under the License.
+-->
+<project name="sts-transform" default="runtime" xmlns:ivy="antlib:org.apache.ivy.ant" xmlns:artifact="antlib:org.apache.maven.artifact.ant">
+
+  <!-- Load all the default properties, and any the user wants    -->
+  <!-- to contribute (without having to type -D or edit this file -->
+  <property file="${user.home}/build.properties" />
+  <property file="${basedir}/build.properties" />
+  <property file="${basedir}/default.properties" />
+  <property name="test.junit.output.format" value="plain"/>
+  <property name="release.dir" value="${build.dir}/release"/>
+  
+  <!-- define Maven coordinates, repository url and artifacts name etc -->
+  <property name="groupId" value="uk.gov.scotland.sts" />
+  <property name="artifactId" value="sts" />
+  <property name="maven-repository-url" value="" />
+  <property name="maven-repository-id" value="" />
+  <property name="maven-jar" value="${release.dir}/${artifactId}-${version}.jar" />
+  <property name="maven-javadoc-jar" value="${release.dir}/${artifactId}-${version}-javadoc.jar" />
+  <property name="maven-sources-jar" value="${release.dir}/${artifactId}-${version}-sources.jar" />
+
+ 
+  <!-- the normal classpath -->
+  <path id="classpath">
+    <pathelement location="${build.classes}"/>
+    <fileset dir="${build.lib.dir}">
+      <include name="*.jar" />
+    </fileset>
+  </path>
+
+  <!-- the unit test classpath -->
+  <dirname property="plugins.classpath.dir" file="${build.plugins}"/>
+  <path id="test.classpath">
+    <pathelement location="${test.build.classes}" />
+    <pathelement location="${conf.dir}"/>
+    <pathelement location="${test.src.dir}"/>
+    <pathelement location="${plugins.classpath.dir}"/>
+    <path refid="classpath"/>
+    <pathelement location="${build.dir}/${final.name}.job" />
+    <fileset dir="${build.lib.dir}">
+      <include name="*.jar" />
+    </fileset>
+  </path>
+
+  <!-- ====================================================== -->
+  <!-- Stuff needed by all targets                            -->
+  <!-- ====================================================== -->
+  <target name="init" depends="ivy-init">
+    <mkdir dir="${build.dir}"/>
+    <mkdir dir="${build.classes}"/>
+    <mkdir dir="${release.dir}"/>
+
+    <mkdir dir="${test.build.dir}"/>
+    <mkdir dir="${test.build.classes}"/>
+
+    <touch datetime="01/25/1971 2:00 pm">
+      <fileset dir="${conf.dir}" includes="**/*.template"/>
+    </touch>
+
+    <copy todir="${conf.dir}" verbose="true">
+      <fileset dir="${conf.dir}" includes="**/*.template"/>
+      <mapper type="glob" from="*.template" to="*"/>
+    </copy>
+  </target>
+
+  <!-- ====================================================== -->
+  <!-- Compile the Java files                                 -->
+  <!-- ====================================================== -->
+  <target name="compile" depends="compile-core, compile-plugins"/>
+
+  <target name="compile-core" depends="init, resolve-default">
+    <javac 
+     encoding="${build.encoding}" 
+     srcdir="${src.dir}"
+     includes="uk/gov/scotland/sts/**/*.java"
+     destdir="${build.classes}"
+     debug="${javac.debug}"
+     optimize="${javac.optimize}"
+     target="${javac.version}"
+     source="${javac.version}"
+     deprecation="${javac.deprecation}">
+      <classpath refid="classpath"/>
+    </javac>    
+  </target>
+
+  <target name="compile-plugins" depends="init, resolve-default">
+    <ant dir="src/plugin" target="deploy" inheritAll="false"/>
+  </target>
+
+  <!-- ================================================================== -->
+  <!-- Make sts-transform.jar                                                     -->
+  <!-- ================================================================== -->
+  <!--                                                                    -->
+  <!-- ================================================================== -->
+  <target name="jar" depends="compile-core">
+    <copy file="${conf.dir}/sts-default.xml"
+          todir="${build.classes}"/>
+    <copy file="${conf.dir}/sts-site.xml"
+          todir="${build.classes}"/>
+    <jar jarfile="${build.dir}/${final.name}.jar"
+         basedir="${build.classes}">
+      <manifest>
+      </manifest>
+    </jar>
+  </target>
+
+  <!-- ================================================================== -->
+  <!-- Make Maven Central Release                                         -->
+  <!-- ================================================================== -->
+  <!--                                                                    -->
+  <!-- ================================================================== -->  
+
+  <!-- ================================================================== -->
+  <!-- Deploy to Maven Repository                                         -->
+  <!-- ================================================================== -->
+  <!--                                                                    -->
+  <!-- ================================================================== -->  
+
+  <!-- ================================================================== -->
+  <!-- Make job jar                                                       -->
+  <!-- ================================================================== -->
+  <!--                                                                    -->
+  <!-- ================================================================== -->
+  <target name="job" depends="compile">
+    <jar jarfile="${build.dir}/${final.name}.job">
+      <!-- If the build.classes has the sts config files because the jar
+           command command has run, exclude them.  The conf directory has 
+           them.
+      -->
+      <zipfileset dir="${build.classes}"
+                  excludes="sts-default.xml,sts-site.xml"/>
+      <zipfileset dir="${conf.dir}"/>
+      <zipfileset dir="${build.lib.dir}" prefix="lib"
+                  includes="**/*.jar"/>
+      <zipfileset dir="${build.plugins}" prefix="classes/plugins"/>
+    </jar>
+  </target>
+
+  <target name="runtime" depends="jar, job">
+    <mkdir dir="${runtime.dir}"/>
+    <mkdir dir="${runtime.local}"/>
+    <mkdir dir="${runtime.deploy}"/>
+    <!-- deploy area -->
+    <copy file="${build.dir}/${final.name}.job"
+          todir="${runtime.deploy}"/>
+    <copy todir="${runtime.deploy}/bin">
+      <fileset dir="src/bin"/>
+    </copy>
+    <chmod perm="ugo+x" type="file">
+        <fileset dir="${runtime.deploy}/bin"/>
+    </chmod>
+    <!-- local area -->
+    <copy file="${build.dir}/${final.name}.jar"
+          todir="${runtime.local}/lib"/>
+    <copy todir="${runtime.local}/lib/native">
+      <fileset dir="lib/native"/>
+    </copy>
+    <copy todir="${runtime.local}/conf">
+      <fileset dir="conf" excludes="*.template"/>
+    </copy>
+    <copy todir="${runtime.local}/bin">
+      <fileset dir="src/bin"/>
+    </copy>
+    <chmod perm="ugo+x" type="file">
+        <fileset dir="${runtime.local}/bin"/>
+    </chmod>
+    <copy todir="${runtime.local}/lib">
+      <fileset dir="${build.dir}/lib"/>
+    </copy>
+    <copy todir="${runtime.local}/plugins">
+      <fileset dir="${build.dir}/plugins"/>
+    </copy>
+    <copy todir="${runtime.local}/test">
+      <fileset dir="${build.dir}/test"/>
+    </copy>
+  </target>
+
+  <!-- ================================================================== -->
+  <!-- Compile test code                                                  --> 
+  <!-- ================================================================== -->
+  <target name="compile-core-test" depends="compile-core, resolve-test">
+    <javac 
+     encoding="${build.encoding}" 
+     srcdir="${test.src.dir}"
+     includes="uk/gov/scotland/sts/**/*.java"
+     destdir="${test.build.classes}"
+     debug="${javac.debug}"
+     optimize="${javac.optimize}"
+     target="${javac.version}"
+     source="${javac.version}"
+     deprecation="${javac.deprecation}">
+      <classpath refid="test.classpath"/>
+    </javac>    
+  </target>
+
+  <!-- ================================================================== -->
+  <!-- Run sts proxy                                                      --> 
+  <!-- ================================================================== -->
+
+  <!-- ================================================================== -->
+  <!-- Run sts benchmarking analysis                                      --> 
+  <!-- ================================================================== -->
+
+  <!-- ================================================================== -->
+  <!-- Run unit tests                                                     --> 
+  <!-- ================================================================== -->
+  <target name="test" depends="test-core, test-plugins"/>
+
+  <target name="test-core" depends="job, compile-core-test">
+
+    <delete dir="${test.build.data}"/>
+    <mkdir dir="${test.build.data}"/>
+    <!-- 
+     copy resources needed in junit tests
+    -->
+    <copy todir="${test.build.data}">
+      <fileset dir="src/testresources" includes="**/*"/>
+    </copy>
+    <copy file="${test.src.dir}/sts-site.xml"
+          todir="${test.build.classes}"/>
+
+    <copy file="${test.src.dir}/log4j.properties"
+          todir="${test.build.classes}"/>
+
+    <junit printsummary="yes" haltonfailure="no" fork="yes" dir="${basedir}"
+      errorProperty="tests.failed" failureProperty="tests.failed" maxmemory="1000m">
+      <sysproperty key="test.build.data" value="${test.build.data}"/>
+      <sysproperty key="test.src.dir" value="${test.src.dir}"/>
+      <sysproperty key="javax.xml.parsers.DocumentBuilderFactory" value="com.sun.org.apache.xerces.internal.jaxp.DocumentBuilderFactoryImpl"/> 
+      <classpath refid="test.classpath"/>
+      <formatter type="${test.junit.output.format}" />
+      <batchtest todir="${test.build.dir}" unless="testcase">
+        <fileset dir="${test.src.dir}"
+                 includes="**/Test*.java" excludes="**/${test.exclude}.java" />
+      </batchtest>
+      <batchtest todir="${test.build.dir}" if="testcase">
+        <fileset dir="${test.src.dir}" includes="**/${testcase}.java"/>
+      </batchtest>
+    </junit>
+
+    <fail if="tests.failed">Tests failed!</fail>
+
+  </target>   
+
+  <target name="test-plugins" depends="compile">
+    <ant dir="src/plugin" target="test" inheritAll="false"/>
+  </target>
+
+  <target name="nightly" depends="test, tar">
+  </target>
+
+  <!-- ================================================================== -->
+  <!-- Ivy targets                                                        -->
+  <!-- ================================================================== -->
+
+  <!-- target: resolve  ================================================= -->
+  <target name="resolve-default" depends="clean-lib" description="--> resolve and retrieve dependencies with ivy">
+    <ivy:resolve file="${ivy.file}" conf="default" log="download-only"/>
+    <ivy:retrieve pattern="${build.lib.dir}/[artifact]-[revision].[ext]" symlink="false" log="quiet"/>
+    <antcall target="copy-libs"/>
+  </target>
+
+  <target name="resolve-test" depends="clean-lib" description="--> resolve and retrieve dependencies with ivy">
+    <ivy:resolve file="${ivy.file}" conf="test" log="download-only"/>
+    <ivy:retrieve pattern="${build.lib.dir}/[artifact]-[revision].[ext]" symlink="false" log="quiet"/>
+    <antcall target="copy-libs"/>
+  </target>
+
+  <target name="copy-libs">
+    <!-- copy the libs in lib, which are not ivy enabled-->
+    <copy todir="${build.lib.dir}/" failonerror="false">
+      <fileset dir="${lib.dir}" includes="**/*.jar"/>
+    </copy>
+  </target>
+
+  <!-- target: publish-local  =========================================== -->
+  <target name="publish-local" depends="jar" description="--> publish this project in the local ivy repository">
+    <ivy:publish artifactspattern="${build.dir}/[artifact]-${version}.[ext]" 
+                    resolver="local"
+                    pubrevision="${version}"
+          pubdate="${now}"
+                    status="integration"
+              forcedeliver="true"
+              overwrite="true"
+        />
+    <echo message="project ${ant.project.name} published locally with version ${version}" />
+  </target>
+
+  <!-- target: report  ================================================== -->
+  <target name="report" depends="resolve-test" description="--> generates a report of dependencies">
+    <ivy:report todir="${build.dir}"/>
+  </target>
+
+  <!-- target: ivy-init  ================================================ -->
+  <target name="ivy-init" depends="ivy-probe-antlib, ivy-init-antlib">
+    <ivy:settings file="${ivy.dir}/ivysettings.xml" />
+  </target>
+
+  <!-- target: ivy-probe-antlib  ======================================== -->
+  <target name="ivy-probe-antlib">
+    <condition property="ivy.found">
+      <typefound uri="antlib:org.apache.ivy.ant" name="cleancache" />
+    </condition>
+  </target>
+
+  <!-- target: ivy-download  ============================================ -->
+  <target name="ivy-download" description="Download ivy">
+    <available file="${ivy.jar}" property="ivy.jar.found"/>
+    <antcall target="-ivy-download-unchecked"/>
+  </target>
+
+  <!-- target: ivy-download-unchecked  ================================== -->
+  <target name="-ivy-download-unchecked" unless="ivy.jar.found">
+    <get src="${ivy.repo.url}" dest="${ivy.jar}" usetimestamp="true" />
+  </target>
+
+  <!-- target: ivy-init-antlib  ========================================= -->
+  <target name="ivy-init-antlib" depends="ivy-download" unless="ivy.found">
+    <typedef uri="antlib:org.apache.ivy.ant" onerror="fail" loaderRef="ivyLoader">
+      <classpath>
+        <pathelement location="${ivy.jar}" />
+      </classpath>
+    </typedef>
+    <fail>
+      <condition>
+        <not>
+          <typefound uri="antlib:org.apache.ivy.ant" name="cleancache" />
+        </not>
+      </condition>
+      You need Apache Ivy 2.0 or later from http://ant.apache.org/
+      It could not be loaded from ${ivy.repo.url}
+    </fail>
+  </target>
+
+  <!-- ================================================================== -->
+  <!-- Documentation                                                      -->
+  <!-- ================================================================== -->
+  <target name="javadoc" depends="compile">
+    <mkdir dir="${build.javadoc}"/>
+    <javadoc
+      overview="${src.dir}/overview.html"
+      destdir="${build.javadoc}"
+      author="true"
+      version="true"
+      use="true"
+      windowtitle="${Name} ${version} API"
+      doctitle="${Name} ${version} API"
+      bottom="Copyright &amp;copy; ${year} Lewis John McGibbney"
+      >
+        <arg value="${javadoc.proxy.host}"/>
+        <arg value="${javadoc.proxy.port}"/>
+
+      <packageset dir="${src.dir}"/>
+      <packageset dir="${plugins.dir}/plugin-name/src/java"/>
+	  <!-- To be completed when plugins are written -->
+      
+      <link href="${javadoc.link.java}"/>
+      <link href="${javadoc.link.hadoop}"/>
+      
+      <classpath refid="classpath"/>
+    	<classpath>
+    		<fileset dir="${plugins.dir}" >
+    			<include name="**/*.jar"/>
+    		</fileset>
+    	</classpath>
+    	
+      <group title="Core" packages="uk.gov.scotland.sts.*"/>
+      <group title="Plugins API" packages="${plugins.api}"/>
+      <group title="Parse Plugins" packages="${plugins.parse}"/>
+      <group title="Misc. Plugins" packages="${plugins.misc}"/>
+    </javadoc>
+    <!-- Copy the plugin.dtd file to the plugin doc-files dir -->
+    <copy file="${plugins.dir}/plugin.dtd"
+          todir="${build.javadoc}/uk/gov/scotland/sts/plugin/doc-files"/>
+  </target>	
+	
+  <target name="default-doc">
+    <style basedir="${conf.dir}" destdir="${docs.dir}"
+           includes="sts-default.xml" style="conf/sts-conf.xsl"/>
+  </target>
+
+  <!-- ================================================================== -->
+  <!-- D I S T R I B U T I O N                                            -->
+  <!-- ================================================================== -->
+  <!--                                                                    -->
+  <!-- ================================================================== -->
+  <target name="package" depends="runtime, javadoc">
+    <mkdir dir="${dist.version.dir}"/>
+    <mkdir dir="${dist.version.dir}/lib"/>
+    <mkdir dir="${dist.version.dir}/runtime"/>
+    <mkdir dir="${dist.version.dir}/docs"/>
+    <mkdir dir="${dist.version.dir}/docs/api"/>
+    <mkdir dir="${dist.version.dir}/ivy"/>
+
+    <copy todir="${dist.version.dir}/lib" includeEmptyDirs="false">
+      <fileset dir="lib"/>
+    </copy>
+   
+    <copy todir="${dist.version.dir}/runtime">
+      <fileset dir="runtime"/>
+    </copy>
+
+    <chmod perm="ugo+x" type="file">
+        <fileset dir="${dist.version.dir}/runtime/deploy/bin"/>
+        <fileset dir="${dist.version.dir}/runtime/local/bin"/>
+    </chmod>
+
+    <copy todir="${dist.version.dir}/conf">
+      <fileset dir="${conf.dir}" excludes="**/*.template"/>
+    </copy>
+
+    <copy todir="${dist.version.dir}/docs/api">
+      <fileset dir="${build.javadoc}"/>
+    </copy>
+
+    <copy todir="${dist.version.dir}">
+      <fileset dir=".">
+        <include name="*.txt" />
+      </fileset>
+    </copy>
+
+    <copy todir="${dist.version.dir}/src" includeEmptyDirs="true">
+      <fileset dir="src"/>
+    </copy>
+
+    <copy todir="${dist.version.dir}/ivy" includeEmptyDirs="true">
+      <fileset dir="ivy"/>
+    </copy>
+
+    <copy todir="${dist.version.dir}/" file="build.xml"/>
+    <copy todir="${dist.version.dir}/" file="default.properties"/>
+
+  </target>
+
+  <!-- ================================================================== -->
+  <!-- Make release tarball                                               -->
+  <!-- ================================================================== -->
+  <target name="tar" depends="package">
+    <tar compression="gzip" longfile="gnu"
+      destfile="${dist.dir}/${final.name}.tar.gz">
+      <tarfileset dir="${dist.dir}" mode="664">
+	<exclude name="${final.name}/bin/*" />
+        <include name="${final.name}/**" />
+      </tarfileset>
+      <tarfileset dir="${dist.dir}" mode="755">
+        <include name="${final.name}/bin/*" />
+      </tarfileset>
+    </tar>
+  </target>
+
+  <!-- ================================================================== -->
+  <!-- Make release tarball                                               -->
+  <!-- ================================================================== -->
+  <target name="zip" depends="package">
+   <zip compress="true" casesensitive="yes" destfile="${dist.dir}/${final.name}.zip">
+   <zipfileset dir="${dist.dir}" filemode="664">
+       <exclude name="${final.name}/bin/*" />
+       <include name="${final.name}/**" />
+   </zipfileset>
+   <zipfileset dir="${dist.dir}" filemode="755">
+       <include name="${final.name}/bin/*" />
+   </zipfileset>
+   </zip>
+  </target>
+	
+  <!-- ================================================================== -->
+  <!-- Clean.  Delete the build files, and their directories              -->
+  <!-- ================================================================== -->
+
+  <!-- target: clean  =================================================== -->
+  <target name="clean" depends="clean-build, clean-lib, clean-dist, clean-runtime" description="--> clean the project" />
+
+  <!-- target: clean-local  ============================================= -->
+  <target name="clean-local" depends="" 
+                description="--> cleans the local repository for the current module">
+    <delete dir="${ivy.local.default.root}/${ivy.organisation}/${ivy.module}"/>
+  </target>
+
+  <!-- target: clean-lib  =============================================== -->
+  <target name="clean-lib" description="--> clean the project libraries directory (dependencies)">
+    <delete includeemptydirs="true" dir="${build.lib.dir}"/>
+  </target>
+
+  <!-- target: clean-build  ============================================= -->
+  <target name="clean-build" description="--> clean the project built files">
+    <delete includeemptydirs="true" dir="${build.dir}"/>
+  </target>
+
+  <!-- target: clean-dist   ============================================= -->
+  <target name="clean-dist" description="--> clean the project dist files">
+    <delete includeemptydirs="true" dir="${dist.dir}"/>
+  </target>
+
+  <!-- target: clean-cache  ============================================= -->
+  <target name="clean-cache" depends=""
+                        description="delete ivy cache">
+    <ivy:cleancache />
+  </target>
+
+  <target name="clean-runtime" description="--> clean the project runtime area">
+    <delete includeemptydirs="true" dir="${runtime.dir}"/>
+  </target>
+
+  <!-- ================================================================== -->
+  <!-- RAT targets                                                        -->
+  <!-- ================================================================== -->
+
+  <!-- ================================================================== -->
+  <!-- SONAR targets                                                      -->
+  <!-- ================================================================== -->
+	
+</project>
