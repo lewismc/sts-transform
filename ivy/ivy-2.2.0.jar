@@ -1,0 +1,142 @@
+
+
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html lang="en">
+<head>
+<title>IT Security Policy Notice: Information Services</title>
+<meta name="keywords" content="Information Services">
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+<link href="style/style.css" rel="stylesheet" type="text/css">
+<script language=javascript>
+
+function parseData(str, start, end)
+{
+	result = "";
+	i = str.indexOf(start);
+
+	if (i >= 0) {
+		len = str.length;
+		substr = str.substr(i+start.length, len - start.length);
+
+		j = substr.indexOf(end);
+		if ( j > 0) {
+			result = substr.substring(0, j);
+		}
+		else {
+			if ( j != 0) {
+				len = substr.length;
+				result = substr.substr(0, len);
+			}
+		}
+	}
+ 	return result;
+}
+
+function getData(){
+	str = document.location.href;
+	len = str.length;
+	i = str.indexOf("?");
+	if ( i>= 0) {
+		query = str.substr(i+1, len-i-1);
+
+		url = parseData(query, "URL=", "&");
+		document.block.URL.value = url;
+
+		ip = parseData(query, "IP=", "&");
+		document.block.IP.value = ip;
+
+		cat = parseData(query, "CAT=", "&");
+		document.block.CAT.value = cat;
+
+		user = parseData(query, "USER=", "&");
+		document.block.USER.value = user;
+	}
+}
+
+
+function do_options(){
+	document.block.action="https://citfil1.enterprise.gcal.ac.uk:8081/AuthenticationServer/AuthenticationForm.jsp?"
+	document.block.submit();
+}
+
+</script>
+
+</head>
+<body>
+<table width="100%" height="100%" border="0" cellpadding="0" cellspacing="0">
+  <tr>
+    <td class="GCUbanner"><table width="100%" border="0" cellpadding="0" cellspacing="0" class="GCUbanner" summary="university level navigation">
+      <tr>
+        <td class="GCUlogo"><a href="http://www.gcal.ac.uk"><img src="images/logo_new.gif" width="147" height="83" alt="GCU Home" border="0"></a></td>
+        <td align="right">&nbsp;</td>
+        <td align="right">&nbsp;</td>
+      </tr>
+    </table></td>
+  </tr>
+  <tr>
+    <td class="banner"><!-- #BeginLibraryItem "/assets/banner_support.lbi" --> <a href="http://www.gcal.ac.uk/student/computerstuff/"><img src="images/support.jpg" alt=" Learning Services: Support &amp; Wellbeing" width="400" height="75" border="0"></a><!-- #EndLibraryItem --></td>
+  </tr>
+  <tr>
+    <td align="right" valign="middle" class="mainMenu"><table height="20" border="0" cellpadding="0" cellspacing="0" summary="main navigation">
+      <tr>
+	      <td></td>
+          
+      </tr>
+    </table></td>
+  </tr>
+  <tr>
+    <td align="right" valign="middle" class="sectionMenu"><table height="20" border="0" cellpadding="0" cellspacing="0" summary="secondary navigation">
+      <tr>
+          <td class="sectionMenu"></td>
+  </tr>
+</table>
+    </td>
+  </tr>
+  <tr> 
+    <td valign="top"> 
+      <table width="100%" height="100%" border="0" cellpadding="0" cellspacing="1" summary="main body">
+        <tr valign="top"> 
+          <td class="leftColumn"> 
+           
+          </td>
+          <td class="mainContent"> 
+            <h1>IT Security Policy Notice </h1>
+
+			
+			<form method=post name=block >
+	<input type=hidden name="SITE" value="_BLOCK_SITE_">
+	<input type=hidden name="URL" value="">
+	<input type=hidden name="IP" value="">
+	<input type=hidden name="CAT" value="">
+	<input type=hidden name="USER" value="">
+	<input type=hidden name="STEP" value="STEP2">
+</form>
+
+<div class="invisible">
+<script language=javascript>
+	getData();
+	showData();
+</script>
+</div>
+            <p>In order to access the Internet you must authenticate using your University  username and password. Please <a href="https://citfil1.enterprise.gcal.ac.uk:8081/AuthenticationServer/AuthenticationForm.jsp?URL=http://repo2.maven.org/maven2/org/apache/ivy/ivy/2.2.0/ivy-2.2.0.jar&IP=10.31.1.237">Click here to continue</a>.</p>
+
+
+            <p>Last Updated: 
+              <!-- #BeginDate format:Sw1 -->18 May, 2009<!-- #EndDate -->
+              <br>
+              Edited by: <a href="mailto:webteam@gcal.ac.uk">Information 
+              Services Web Team</a> 
+          </td>
+          <td class="rightColumn"> 
+		  <h2>Information Service Desk</h2>
+		  <p>Tel: 0141 273 1234<br>
+            Email: <a href="mailto:isd@gcal.ac.uk">isd@gcal.ac.uk</a> </p>
+            
+          </td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+</table>
+</body>
+</html>
