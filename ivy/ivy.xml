@@ -30,6 +30,14 @@
 	</publications>
 
 	<dependencies>
+		<dependency org="uk.ac.gate" name="gate-core" rev="6.1" >
+			<artifact name="gate-core" type="jar" />
+		</dependency>
+
+		<dependency org="com.hp.hpl.jena" name="jena" rev="2.6.4" >
+			<artifact name="jena" type="jar" />
+		</dependency>
+		
 		<dependency org="org.slf4j" name="slf4j-log4j12" rev="1.6.1" conf="*->master" />
 
 		<dependency org="commons-lang" name="commons-lang" rev="2.4"
@@ -58,7 +66,7 @@
 		<dependency org="org.mortbay.jetty" name="jetty-util" rev="6.1.22"
 			conf="test->default" />
 
-                <!--global exclusion-->
+	<!--global exclusion-->
 
 	</dependencies>
 

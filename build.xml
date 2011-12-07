@@ -308,7 +308,7 @@
 
   <!-- target: ivy-init  ================================================ -->
   <target name="ivy-init" depends="ivy-probe-antlib, ivy-init-antlib">
-    <ivy:settings file="${ivy.dir}/ivysettings.xml" />
+    <ivy:settings file="${ivy.dir}/ivy-settings.xml" />
   </target>
 
   <!-- target: ivy-probe-antlib  ======================================== -->
