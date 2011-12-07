@@ -65,6 +65,8 @@
     <mkdir dir="${build.classes}"/>
     <mkdir dir="${release.dir}"/>
 
+  	<mkdir dir="${build.plugins}"/>
+  	
     <mkdir dir="${test.build.dir}"/>
     <mkdir dir="${test.build.classes}"/>
 
@@ -154,22 +156,9 @@
   <target name="runtime" depends="jar, job">
     <mkdir dir="${runtime.dir}"/>
     <mkdir dir="${runtime.local}"/>
-    <mkdir dir="${runtime.deploy}"/>
-    <!-- deploy area -->
-    <copy file="${build.dir}/${final.name}.job"
-          todir="${runtime.deploy}"/>
-    <copy todir="${runtime.deploy}/bin">
-      <fileset dir="src/bin"/>
-    </copy>
-    <chmod perm="ugo+x" type="file">
-        <fileset dir="${runtime.deploy}/bin"/>
-    </chmod>
     <!-- local area -->
     <copy file="${build.dir}/${final.name}.jar"
           todir="${runtime.local}/lib"/>
-    <copy todir="${runtime.local}/lib/native">
-      <fileset dir="lib/native"/>
-    </copy>
     <copy todir="${runtime.local}/conf">
       <fileset dir="conf" excludes="*.template"/>
     </copy>
