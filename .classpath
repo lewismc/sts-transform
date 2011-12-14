@@ -92,5 +92,6 @@
 	<classpathentry kind="lib" path="runtime/local/lib/xmlbeans-2.3.0.jar"/>
 	<classpathentry kind="lib" path="runtime/local/lib/xmlParserAPIs-2.6.2.jar"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry kind="con" path="org.apache.ivyde.eclipse.cpcontainer.IVYDE_CONTAINER/?ivyXmlPath=ivy%2Fivy.xml&amp;confs=*"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
