@@ -38,6 +38,10 @@
 			<artifact name="jena" type="jar" />
 		</dependency>
 		
+		<dependency org="net.sourceforge.saxon" name="saxon" rev="9.1.0.8" >
+			<artifact name="saxon" type="jar" />
+		</dependency>
+		
 		<dependency org="org.slf4j" name="slf4j-log4j12" rev="1.6.1" conf="*->master" />
 
 		<dependency org="commons-lang" name="commons-lang" rev="2.4"
@@ -53,7 +57,9 @@
 
 		<dependency org="log4j" name="log4j" rev="1.2.15" conf="*->master" />
 
-		<dependency org="xerces" name="xercesImpl" rev="2.9.1" />
+		<dependency org="xalan" name="xalan" rev="2.7.1" >
+			<artifact name="xalan" type="jar" />
+		</dependency>
 		<dependency org="xerces" name="xmlParserAPIs" rev="2.6.2" />
 
 		<!--Configuration: test -->
