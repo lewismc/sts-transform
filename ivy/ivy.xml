@@ -15,8 +15,7 @@
 	<info organisation="uk.gov.scotland" module="sts">
 		<license name="Apache 2.0" url="http://www.apache.org/licenses/LICENSE-2.0.txt/"/>
 		<ivyauthor name="Lewis John McGibbney" url="https://github.com/lewismc" />
-		<description homepage="https://github.com/lewismc">Nutch is an open source web-search software. It builds on 
-		Hadoop, Tika and Solr, adding web-specifics, such as a crawler, a link-graph database etc.
+		<description homepage="https://github.com/lewismc">sts-transform is an open source transformation project for Scottish Technical Standards. Associated projects within this suite can be found at https://github.com/lewismc
 		</description>
 	</info>
 
@@ -38,7 +37,7 @@
 			<artifact name="jena" type="jar" />
 		</dependency>
 		
-		<dependency org="org.slf4j" name="slf4j-log4j12" rev="1.6.1" conf="*->master" />
+		<dependency org="org.slf4j" name="slf4j-log4j12" rev="1.5.8" conf="*->master" />
 
 		<dependency org="commons-lang" name="commons-lang" rev="2.4"
 			conf="*->default" />

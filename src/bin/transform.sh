@@ -1,3 +1,4 @@
+
 #!/bin/bash
 #
 # Licensed to the Apache Software Foundation (ASF) under one or more
@@ -108,6 +109,11 @@ if $local; then
   fi
 fi
 
+# cygwin path translation
+if $cygwin; then
+  CLASSPATH=`cygpath -p -w "$CLASSPATH"`
+fi
+
 # restore ordinary behaviour
 unset IFS
 
@@ -129,21 +135,19 @@ if [ "x$JAVA_LIBRARY_PATH" != "x" ]; then
 fi
 
 # figure out which class to run
-if [ "$COMMAND" = "transform" ] ; then
+if [ "$COMMAND" = "TransformFull" ] ; then
   CLASS=uk.gov.scotland.sts.transform.TransformFull
-elif [ "$COMMAND" = "transform-xml" ] ; then
+elif [ "$COMMAND" = "TransformXml" ] ; then
   CLASS=uk.gov.scotland.sts.transform.TransformXml
-elif [ "$COMMAND" = "transform-annotate" ] ; then
+elif [ "$COMMAND" = "TransformAnnotate" ] ; then
   CLASS=uk.gov.scotland.sts.transform.TransformAnnotate
-elif [ "$COMMAND" = "transform-rdf/xml" ] ; then
+elif [ "$COMMAND" = "TransformRdfXml" ] ; then
   CLASS=uk.gov.scotland.sts.transform.TransformRdfXml
 elif [ "$COMMAND" = "junit" ] ; then
   CLASSPATH=$CLASSPATH:test/classes/
   CLASS=junit.textui.TestRunner
 else
-  MODULE="$COMMAND"
-  CLASS=$1
-  shift
+  CLASS=$COMMAND
 fi
 
 if $local; then
