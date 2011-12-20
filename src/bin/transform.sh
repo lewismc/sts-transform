@@ -47,11 +47,11 @@ done
 if [ $# = 0 ]; then
   echo "Usage: sts-transform [-core] COMMAND"
   echo "where COMMAND is one of:"
-  echo "  transform              full script for HTML --> RDF/XML transformations"
-  echo "  transform-xml          HTML --> XML transformations"
-  echo "  transform-annotate     XML --> annotated XML transformations"
-  echo "  transform-rdf/xml      annotated XML --> RDF/XML transformations"
-  echo "  junit		             runs the given JUnit test"
+  echo "  transformFull         full script for HTML --> RDF/XML transformations"
+  echo "  transformXml          HTML --> XML transformations"
+  echo "  transformAnnotate     XML --> annotated XML transformations"
+  echo "  transformRdfxml       annotated XML --> RDF/XML transformations"
+  echo "  junit                 runs the given JUnit test"
   echo " or" 
   echo "  CLASSNAME              run the class named CLASSNAME"
   echo "Most commands print help when invoked w/o parameters."
@@ -130,13 +130,13 @@ fi
 
 # figure out which class to run
 if [ "$COMMAND" = "transform" ] ; then
-  CLASS=uk.gov.scotland.sts.transform.full
+  CLASS=uk.gov.scotland.sts.transform.TransformFull
 elif [ "$COMMAND" = "transform-xml" ] ; then
-  CLASS=uk.gov.scotland.sts.transform.xml
+  CLASS=uk.gov.scotland.sts.transform.TransformXml
 elif [ "$COMMAND" = "transform-annotate" ] ; then
-  CLASS=uk.gov.scotland.sts.transform.annotate
+  CLASS=uk.gov.scotland.sts.transform.TransformAnnotate
 elif [ "$COMMAND" = "transform-rdf/xml" ] ; then
-  CLASS=uk.gov.scotland.sts.transform.rdfxml
+  CLASS=uk.gov.scotland.sts.transform.TransformRdfXml
 elif [ "$COMMAND" = "junit" ] ; then
   CLASSPATH=$CLASSPATH:test/classes/
   CLASS=junit.textui.TestRunner
